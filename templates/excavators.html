@@ -199,7 +199,7 @@
                                                    </td>
                                                     <td>{{ (detail.upload_speed|int/1024)|int }}/{{ (detail.upload_speed_max|int/1024)|int }}</td>
                                                     <td>{{ (detail.download_speed|int/1024)|int }}/{{ (detail.download_speed_max|int/1024)|int }}</td>
-                                                    <td>{{ (detail.space_used|int/1024/1024/1024)|int }}/{{ (detail.space_quota|int/1024/1024/1024)|int }}</td>
+                                                    <td>{{ number_format(detail.space_used|int/1024/1024/1024) }}/{{ (detail.space_quota|int/1024/1024/1024)|round }}</td>
                                                     <td {% if dev.upgradeable %} style="min-width: 120px;" {% endif %}>
                                                         {% if detail.status == 'running' %}
                                                             <span class="label label-info">

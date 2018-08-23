@@ -386,11 +386,13 @@ def add_function():
         passwd = passwd.replace('+', '-')
         passwd = passwd.replace('/', '_')
         return passwd
+    def number_format(num):
+        return float("%2f" % num)
 
     def int2ip(int_ip):
         return socket.inet_ntoa(struct.pack("I", int_ip))
 
-    return dict(convert_to_yuan=convert_to_yuan, get_device_type=get_device_type, get_device_root=get_device_root, int2ip=int2ip)
+    return dict(convert_to_yuan=convert_to_yuan, get_device_type=get_device_type, get_device_root=get_device_root, number_format=number_format, int2ip=int2ip)
 
 # 显示消息框
 @app.context_processor

@@ -18,14 +18,15 @@ else:
 redis_conf = conf.REDIS_CONF
 pool = redis.ConnectionPool(host=redis_conf.host, port=redis_conf.port, db=redis_conf.db, password=redis_conf.password)
 r_session = redis.Redis(connection_pool=pool)
-
+time_fix = timedelta(hours=8)
 from api import *
+
 
 # 获取用户数据
 def get_data(username):
-    print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'get_data')
+    print((datetime.now()+time_fix).strftime('%Y-%m-%d %H:%M:%S'), 'get_data')
 
-    start_time = datetime.now()
+    start_time = (datetime.now()+time_fix)
     try:
         for user_id in r_session.smembers('accounts:%s' % username):
 
@@ -73,7 +74,7 @@ def get_data(username):
                 account_data = dict()
                 account_data['privilege'] = get_privilege(cookies)
 
-            account_data['updated_time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            account_data['updated_time'] = (datetime.now()+time_fix).strftime('%Y-%m-%d %H:%M:%S')
             account_data['mine_info'] = mine_info
             account_data['device_info'] = red_zqb.get('devices')
             account_data['income'] = get_balance_info(cookies)
@@ -94,27 +95,27 @@ def get_data(username):
                     r_session.setex('can_drawcash', '1', 120)
                 r_session.setex('ttl_drawcash', '1', 60)
 
-        if start_time.day == datetime.now().day:
+        if start_time.day == (datetime.now()+time_fix).day:
             save_history(username)
 
         r_session.setex('user:%s:cron_queued' % username, '1', 60)
-        print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), username.encode('utf-8'), 'successed')
+        print((datetime.now()+time_fix).strftime('%Y-%m-%d %H:%M:%S'), username.encode('utf-8'), 'successed')
 
     except Exception as ex:
-        print(username.encode('utf-8'), 'failed', datetime.now().strftime('%Y-%m-%d %H:%M:%S'), ex)
+        print(username.encode('utf-8'), 'failed', (datetime.now()+time_fix).strftime('%Y-%m-%d %H:%M:%S'), ex)
 
 # 保存历史数据
 def save_history(username):
-    print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'save_history')
+    print((datetime.now()+time_fix).strftime('%Y-%m-%d %H:%M:%S'), 'save_history')
 
-    key = 'user_data:%s:%s' % (username, datetime.now().strftime('%Y-%m-%d'))
+    key = 'user_data:%s:%s' % (username, (datetime.now()+time_fix).strftime('%Y-%m-%d'))
     b_today_data = r_session.get(key)
     if b_today_data is not None:
         today_data = json.loads(b_today_data.decode('utf-8'))
     else:
         today_data = dict()
 
-    today_data['updated_time'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    today_data['updated_time'] = (datetime.now()+time_fix).strftime('%Y-%m-%d %H:%M:%S')
     today_data['pdc'] = 0
     today_data['box_pdc'] = 0
     today_data['last_speed'] = 0
@@ -137,7 +138,7 @@ def save_history(username):
         data = json.loads(b_data.decode('utf-8'))
 
         updated_time = datetime.strptime(data.get('updated_time'), '%Y-%m-%d %H:%M:%S')
-        if updated_time + timedelta(minutes=30) < datetime.now() or updated_time.day != datetime.now().day:
+        if updated_time + timedelta(minutes=30) < (datetime.now()+time_fix) or updated_time.day != (datetime.now()+time_fix).day:
             continue
 
         today_data['refreshes'] += 1
@@ -185,9 +186,9 @@ def save_history(username):
 
 # 获取保存的历史数据
 def save_income_history(username, pdc_detail):
-    print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), username.encode('utf-8'), 'save_income_history')
+    print((datetime.now()+time_fix).strftime('%Y-%m-%d %H:%M:%S'), username.encode('utf-8'), 'save_income_history')
 
-    now = datetime.now()
+    now = (datetime.now()+time_fix)
 
     key = 'user_data:%s:%s' % (username, 'income.history')
     b_income_history = r_session.get(key)
@@ -207,7 +208,7 @@ def save_income_history(username, pdc_detail):
 
 # 重新登录
 def __relogin(username, password, account_info, account_key):
-    print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), username.encode('utf-8'), 'relogin')
+    print((datetime.now()+time_fix).strftime('%Y-%m-%d %H:%M:%S'), username.encode('utf-8'), 'relogin')
 
     login_result = login(username, password, conf.ENCRYPT_PWD_URL)
     if login_result.get('errorCode') != 0:
@@ -223,7 +224,7 @@ def __relogin(username, password, account_info, account_key):
 
 # 获取在线用户数据
 def get_online_user_data():
-    print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'get_online_user_data')
+    print((datetime.now()+time_fix).strftime('%Y-%m-%d %H:%M:%S'), 'get_online_user_data')
 
     if r_session.exists('api_error_info'): return
 
@@ -235,10 +236,10 @@ def get_online_user_data():
 
 # 获取离线用户数据
 def get_offline_user_data():
-    print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'get_offline_user_data')
+    print((datetime.now()+time_fix).strftime('%Y-%m-%d %H:%M:%S'), 'get_offline_user_data')
 
     if r_session.exists('api_error_info'): return
-    #if datetime.now().minute < 50: return
+    #if (datetime.now()+time_fix).minute < 50: return
     if not r_session.smembers('users'): return
 
     offline_users = []
@@ -258,7 +259,7 @@ def get_offline_user_data():
 
 # 从在线用户列表中清除离线用户
 def clear_offline_user():
-    print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'clear_offline_user')
+    print((datetime.now()+time_fix).strftime('%Y-%m-%d %H:%M:%S'), 'clear_offline_user')
 
     for b_username in r_session.smembers('global:online.users'):
         username = b_username.decode('utf-8')
@@ -267,7 +268,7 @@ def clear_offline_user():
 
 # 刷新选择自动任务的用户
 def select_auto_task_user():
-    print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'select_auto_task_user')
+    print((datetime.now()+time_fix).strftime('%Y-%m-%d %H:%M:%S'), 'select_auto_task_user')
 
     r_session.delete('global:auto.collect.cookies')
     r_session.delete('global:auto.drawcash.cookies')
@@ -311,7 +312,7 @@ def select_auto_task_user():
 
 # 执行收取水晶函数
 def check_collect(cookies):
-    print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'check_collect')
+    print((datetime.now()+time_fix).strftime('%Y-%m-%d %H:%M:%S'), 'check_collect')
 
     user_info = cookies.get('user_info')
     del cookies['user_info']
@@ -330,7 +331,7 @@ def check_collect(cookies):
 
 # 执行自动提现的函数
 def check_drawcash(cookies):
-    print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'check_drawcash')
+    print((datetime.now()+time_fix).strftime('%Y-%m-%d %H:%M:%S'), 'check_drawcash')
 
     user_info = cookies.get('user_info')
     del cookies['user_info']
@@ -355,7 +356,7 @@ def check_drawcash(cookies):
 
 # 执行免费宝箱函数
 def check_giftbox(cookies):
-    print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'check_giftbox')
+    print((datetime.now()+time_fix).strftime('%Y-%m-%d %H:%M:%S'), 'check_giftbox')
 
     user_info = cookies.get('user_info')
     del cookies['user_info']
@@ -382,7 +383,7 @@ def check_giftbox(cookies):
 
 # 执行摇晃宝箱函数
 def check_shakegift(cookies):
-    print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'check_shakegift')
+    print((datetime.now()+time_fix).strftime('%Y-%m-%d %H:%M:%S'), 'check_shakegift')
 
     user_info = cookies.get('user_info')
     del cookies['user_info']
@@ -415,7 +416,7 @@ def check_shakegift(cookies):
 
 # 执行秘银进攻函数
 def check_searcht(cookies):
-    print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'check_searcht')
+    print((datetime.now()+time_fix).strftime('%Y-%m-%d %H:%M:%S'), 'check_searcht')
 
     user_info = cookies.get('user_info')
     del cookies['user_info']
@@ -441,7 +442,7 @@ def check_searcht(cookies):
 
 # 执行秘银复仇函数
 def check_revenge(cookies):
-    print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'check_revenge')
+    print((datetime.now()+time_fix).strftime('%Y-%m-%d %H:%M:%S'), 'check_revenge')
 
     user_info = cookies.get('user_info')
     del cookies['user_info']
@@ -469,7 +470,7 @@ def check_revenge(cookies):
 
 # 执行幸运转盘函数
 def check_getaward(cookies):
-    print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'check_getaward')
+    print((datetime.now()+time_fix).strftime('%Y-%m-%d %H:%M:%S'), 'check_getaward')
 
     user_info = cookies.get('user_info')
     del cookies['user_info']
@@ -492,14 +493,14 @@ def check_getaward(cookies):
 
 # 收取水晶
 def collect_crystal():
-    print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'collect_crystal')
+    print((datetime.now()+time_fix).strftime('%Y-%m-%d %H:%M:%S'), 'collect_crystal')
 
     for cookie in r_session.smembers('global:auto.collect.cookies'):
         check_collect(json.loads(cookie.decode('utf-8')))
 
 # 自动提现
 def drawcash_crystal():
-    print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'drawcash_crystal')
+    print((datetime.now()+time_fix).strftime('%Y-%m-%d %H:%M:%S'), 'drawcash_crystal')
 
     if not r_session.exists('can_drawcash'): return
 
@@ -508,35 +509,35 @@ def drawcash_crystal():
 
 # 免费宝箱
 def giftbox_crystal():
-    print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'giftbox_crystal')
+    print((datetime.now()+time_fix).strftime('%Y-%m-%d %H:%M:%S'), 'giftbox_crystal')
 
     for cookie in r_session.smembers('global:auto.giftbox.cookies'):
         check_giftbox(json.loads(cookie.decode('utf-8')))
 
 # 摇晃宝箱
 def shakegift_crystal():
-    print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'shakegift_crystal')
+    print((datetime.now()+time_fix).strftime('%Y-%m-%d %H:%M:%S'), 'shakegift_crystal')
 
     for cookie in r_session.smembers('global:auto.shakegift.cookies'):
         check_shakegift(json.loads(cookie.decode('utf-8')))
 
 # 秘银进攻
 def searcht_crystal():
-    print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'searcht_crystal')
+    print((datetime.now()+time_fix).strftime('%Y-%m-%d %H:%M:%S'), 'searcht_crystal')
 
     for cookie in r_session.smembers('global:auto.searcht.cookies'):
         check_searcht(json.loads(cookie.decode('utf-8')))
 
 # 秘银复仇
 def revenge_crystal():
-    print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'revenge_crystal')
+    print((datetime.now()+time_fix).strftime('%Y-%m-%d %H:%M:%S'), 'revenge_crystal')
 
     for cookie in r_session.smembers('global:auto.revenge.cookies'):
         check_revenge(json.loads(cookie.decode('utf-8')))
 
 # 幸运转盘
 def getaward_crystal():
-    print(datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'getaward_crystal')
+    print((datetime.now()+time_fix).strftime('%Y-%m-%d %H:%M:%S'), 'getaward_crystal')
 
     for cookie in r_session.smembers('global:auto.getaward.cookies'):
         check_getaward(json.loads(cookie.decode('utf-8')))
@@ -552,7 +553,7 @@ def regular_html(info):
 # 自动日记记录
 def loging(user, clas, types, userid, gets):
 
-    key = 'record:%s:%s' % (user.get('username'), datetime.now().strftime('%Y-%m-%d'))
+    key = 'record:%s:%s' % (user.get('username'), (datetime.now()+time_fix).strftime('%Y-%m-%d'))
     b_today_data = r_session.get(key)
     if b_today_data is not None:
         today_data = json.loads(b_today_data.decode('utf-8'))
@@ -560,7 +561,7 @@ def loging(user, clas, types, userid, gets):
         today_data = dict()
         today_data['diary'] = []
 
-    log_as_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    log_as_time = (datetime.now()+time_fix).strftime('%Y-%m-%d %H:%M:%S')
     body = dict(clas=clas, type=types, id=userid, gets=gets, time=log_as_time)
 
     today_data.get('diary').append(body)
