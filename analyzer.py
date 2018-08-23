@@ -5,9 +5,9 @@ from auth import requires_auth
 import time
 import json
 from datetime import datetime, timedelta
-
+time_fix = timedelta(hours=8)
 def __get_speed_stat_chart_data(speed_stat_data):
-    now = datetime.now()
+    now = (datetime.now()+time_fix)
     speed_stat_category = list()
     speed_stat_value = list()
     for i in range(-24, 0):
@@ -25,7 +25,7 @@ def __get_speed_stat_chart_data(speed_stat_data):
     return dict(category=speed_stat_category, value=speed_stat_value)
 
 def __get_history_speed_data(username):
-    today = datetime.now().date() + timedelta(days=-1)
+    today = (datetime.now()+time_fix).date() + timedelta(days=-1)
     begin_date = today + timedelta(days=-7)
 
     value = list()
@@ -71,7 +71,7 @@ def __get_speed_comparison_data(history_data, today_data, str_updated_time):
 
 def __seven_day_pdc(username):
     history_speed = __get_history_speed_data(username)
-    today = datetime.now().date() + timedelta(days=-1)
+    today = (datetime.now()+time_fix).date() + timedelta(days=-1)
     begin_date = today + timedelta(days=-7)
 
     dict_history_speed = dict()
@@ -158,7 +158,7 @@ def analyzer_speed_comparison():
     user = session.get('user_info')
     username = user.get('username')
 
-    str_today = datetime.now().strftime('%Y-%m-%d')
+    str_today = (datetime.now()+time_fix).strftime('%Y-%m-%d')
     key = 'user_data:%s:%s:history.speed' % (username, str_today)
 
     history_speed = dict()
@@ -187,7 +187,7 @@ def analyzer_speed_vs_income():
     user = session.get('user_info')
     username = user.get('username')
 
-    str_today = datetime.now().strftime('%Y-%m-%d')
+    str_today = (datetime.now()+time_fix).strftime('%Y-%m-%d')
     key = 'user_data:%s:%s:%s' % (username, 'speed_vs_income', str_today)
 
     data = dict()
@@ -208,7 +208,7 @@ def analyzer_speed_stat_chart():
     username = user.get('username')
 
     user_key = 'user:%s' % username
-    str_today = datetime.now().strftime('%Y-%m-%d')
+    str_today = (datetime.now()+time_fix).strftime('%Y-%m-%d')
     key = 'user_data:%s:%s' % (username, str_today)
 
     b_data = r_session.get(key)

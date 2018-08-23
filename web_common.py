@@ -6,10 +6,10 @@ import json
 import socket
 import struct
 from datetime import datetime, timedelta
-
+time_fix = timedelta(hours=8)
 # 获取前一日收益
 def __get_yesterday_pdc(username):
-    today = datetime.now()
+    today = (datetime.now()+time_fix)
     month_start_date = datetime(year=today.year, month=today.month, day=1).date()
     week_start_date = (today + timedelta(days=-today.weekday())).date()
     begin_date = month_start_date if month_start_date < week_start_date else week_start_date
@@ -48,7 +48,7 @@ def dashboard_data():
     user = session.get('user_info')
     username = user.get('username')
 
-    key = 'user_data:%s:%s' % (username, datetime.now().strftime('%Y-%m-%d'))
+    key = 'user_data:%s:%s' % (username, (datetime.now()+time_fix).strftime('%Y-%m-%d'))
 
     b_data = r_session.get(key)
     if b_data is None:
@@ -207,7 +207,7 @@ def DoD_income_yuanjiangong():
     today_series = dict(name='今日', data=[], pointPadding=0.2, pointPlacement=0, color='#676A6C')
     yesterday_series = dict(name='昨日', data=[], pointPadding=-0.1, pointPlacement=0, color='#1AB394')
 
-    now = datetime.now()
+    now = (datetime.now()+time_fix)
     today_data = income_history.get(now.strftime('%Y-%m-%d'))
     yesterday_data = income_history.get((now + timedelta(days=-1)).strftime('%Y-%m-%d'))
 
@@ -265,7 +265,7 @@ def DoD_income_xunlei(open_speeds):
     user = session.get('user_info')
     username = user.get('username')
 
-    now = datetime.now()
+    now = (datetime.now()+time_fix)
 
     today_series = dict(name='今日', data=[], pointPadding=0.2, pointPlacement=0, color='#676A6C', yAxis=0)
     yesterday_series = dict(name='昨日', data=[], pointPadding=-0.1, pointPlacement=0, color='#1AB394', yAxis=0)
@@ -352,7 +352,7 @@ def install():
 
         user = dict(username=username, password=hash_password(password), id=str(uuid.uuid1()),
                     active=True, is_admin=True, max_account_no=5,
-                    created_time=datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+                    created_time=(datetime.now()+time_fix).strftime('%Y-%m-%d %H:%M:%S'))
         r_session.set('%s:%s' % ('user', username), json.dumps(user))
         r_session.sadd('users', username)
         return 'username:%s,password:%s' % (username, password)
@@ -433,7 +433,7 @@ def header_info():
         return dict()
     user = session.get('user_info')
 
-    key = 'user_data:%s:%s' % (user.get('username'), datetime.now().strftime('%Y-%m-%d'))
+    key = 'user_data:%s:%s' % (user.get('username'), (datetime.now()+time_fix).strftime('%Y-%m-%d'))
 
     data = dict(balance=0, refreshes=0)
 
