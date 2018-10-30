@@ -1,10 +1,9 @@
 # Crysadm+ 云端监控
 ![image](https://github.com/hauntek/crysadm/raw/master/static/img/preview.png)
 
-最新更新：2017-08-30
-在线预览：http://www.crysadmapp.cn/guest
 
-更新预告：近期准备调整表格优化，按钮支持动态请求，减少重定向刷新。
+最新更新：2018-10-30
+
 
 # 运行环境
 建议 Python 3.4.2 及 Redis 2.8 以上
@@ -23,6 +22,10 @@ crysadm.py 启动web服务
 crysadm_helper.py 启动后台服务
 
 4.启动web服务后访问 /install 生成管理员账号
+
+## Update 2018-10-30
+  
+1.更新接口地址，修复接口地址失效数据不更新问题
 
 ## Update 2017-08-30
 
